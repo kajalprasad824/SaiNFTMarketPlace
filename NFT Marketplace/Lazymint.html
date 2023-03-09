@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>LazyMinting</title>
+    <script
+      type="text/javascript"
+      src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.6.9/ethers.umd.min.js"
+    ></script>
+  </head>
+
+  <body>
+    <button onclick="main()">Get Signature</button>
+    <script type="text/javascript">
+      const SIGNING_DOMAIN_NAME = "Voucher-Domain";
+      const SIGNING_DOMAIN_VERSION = "1";
+      const chainId = 5;
+      const contractAddress = "0x1Dac787B728765496a604590cC01dcFe53644BB6"; // Put the address here from remix
+      const signer = new ethers.Wallet(
+        "9d7fca9687ebb591c5e730d98a160f66ba7214a09614bcafba3fa08cdc360e11"
+      );
+      // const signer = new ethers.Wallet("78db57651aa3beba2566b246bb903268c1571cc4f84b9d42b743d2671e0f87b7")  // 503f38a9c967ed597e47fe25643985f032b072db8075426a92110f82df48dfcb
+      // private key that I use for address 0x5e61dCda87a27Fcd6Bd9647a7Ed01e9CF16beE83
+
+      const domain = {
+        name: SIGNING_DOMAIN_NAME,
+        version: SIGNING_DOMAIN_VERSION,
+        verifyingContract: contractAddress,
+        chainId,
+      };
+
+      //             uint256 crypto_trade_amount;
+      //    uint256 fiat_trade_amount;
+      //    uint256 trade_rate;
+
+      async function createVoucher(
+        tokenId,
+        quantity,
+        minPrice,
+        uri,
+        creator,
+        token,
+        nonce
+      ) {
+        // async function createVoucher(seller, buyer, offerId, tokenName) {
+        const voucher = {
+          tokenId,
+          quantity,
+          minPrice,
+          uri,
+          creator,
+          token,
+          nonce,
+        };
+        const types = {
+          NFTVoucher: [
+            { name: "tokenId", type: "uint256" },
+            { name: "quantity", type: "uint256" },
+            { name: "minPrice", type: "uint256" },
+            { name: "uri", type: "string" },
+            { name: "creator", type: "address" },
+            { name: "token", type: "address" },
+            { name: "nonce", type: "uint256" },
+          ],
+        };
+
+        const signature = await signer._signTypedData(domain, types, voucher);
+        return {
+          ...voucher,
+          signature,
+        };
+      }
+
+      async function main() {
+        const voucher = await createVoucher(
+          1,
+          10,
+          10,
+          "Offer1",
+          "0xC0cf38A6B952Aab887c8f32aEa540721e6595444",
+          "0xD04B22251c90076952fC6E574ef91235484bdC9C",
+          1
+        ); // the address is the address which receives the NFT
+        console.log(
+          `["${voucher.tokenId}","${voucher.quantity}","${voucher.minPrice}","${voucher.uri}","${voucher.creator}","${voucher.token}","${voucher.nonce}","${voucher.signature}"]`
+        );
+        // console.log(`["${voucher.seller}", "${voucher.buyer}", "${voucher.offerId}", "${voucher.tokenName}", "${voucher.signature}"]`)
+      }
+    </script>
+  </body>
+</html>
